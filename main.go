@@ -11,8 +11,8 @@ import (
 func main() {
 
 	const (
-		NumberOfFields = 3 // Set number of fields expected in input file
-		RowsToSkip     = 1 // Set number of rows at top of file to skip
+		NumberOfFields = 147 // Set number of fields expected in input file
+		RowsToSkip     = 4   // Set number of rows at top of file to skip
 	)
 
 	// Check to make sure there's only input file
