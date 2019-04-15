@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 )
 
 func main() {
@@ -58,7 +59,8 @@ func main() {
 	}
 
 	// Create file to write to
-	f, err := os.Create(os.Args[1] + ".csv")
+	outFile := strings.TrimSuffix(os.Args[1], ".ndj") + ".csv"
+	f, err := os.Create(outFile)
 	if err != nil {
 		fmt.Println(err)
 	}
