@@ -3,28 +3,56 @@ package main
 
 import (
 	"encoding/csv"
+	"flag"
 	"fmt"
 	"io"
 	"os"
 	"strings"
 )
 
-func main() {
+var numberOfFields int
+var rowsToSkip int
+var help bool
 
+func init() {
 	const (
-		NumberOfFields = 147 // Set number of fields expected in input file
-		RowsToSkip     = 4   // Set number of rows at top of file to skip
+		fieldsDefault = 147
+		fieldsUsage   = "the number of fields (columns) in the input file"
+		skipDefault   = 4
+		skipUsage     = "the number of rows at the top of the input file to skip"
+		helpDefault   = false
+		helpUsage     = "show this help message"
 	)
 
+	flag.IntVar(&numberOfFields, "fields", fieldsDefault, fieldsUsage)
+	flag.IntVar(&numberOfFields, "f", fieldsDefault, fieldsUsage)
+	flag.IntVar(&rowsToSkip, "skip", skipDefault, skipUsage)
+	flag.IntVar(&rowsToSkip, "s", skipDefault, skipUsage)
+	flag.BoolVar(&help, "help", helpDefault, helpUsage)
+	flag.BoolVar(&help, "h", helpDefault, helpUsage)
+}
+
+func main() {
+
+	usageMessage := "Usage: %s [options] file.ndj\nOptions:\n"
+
+	flag.Usage = func() {
+		fmt.Fprintf(flag.CommandLine.Output(), usageMessage, os.Args[0])
+		flag.PrintDefaults()
+	}
+
+	flag.Parse()
+
 	// Check to make sure there's only input file
-	if len(os.Args) != 2 {
+	if len(flag.Args()) != 1 {
 		// Print usage if not
-		fmt.Println("Usage: nanotocsv file.ndj")
-		os.Exit(0)
+		fmt.Fprintf(flag.CommandLine.Output(), usageMessage, os.Args[0])
+		flag.PrintDefaults()
+		os.Exit(1)
 	}
 
 	// Open file for reading
-	ndjFile, err := os.Open(os.Args[1])
+	ndjFile, err := os.Open(flag.Arg(0))
 	if err != nil {
 		fmt.Printf("nanotocsv: opening file: %s\n", err)
 	}
@@ -33,10 +61,10 @@ func main() {
 	// Create tsv reader
 	r := csv.NewReader(ndjFile)
 	r.Comma = '\t'
-	r.FieldsPerRecord = NumberOfFields
+	r.FieldsPerRecord = numberOfFields
 
 	// Skip rows at top of file
-	for i := 0; i < RowsToSkip; i++ {
+	for i := 0; i < rowsToSkip; i++ {
 		_, err := r.Read()
 		if err == io.EOF {
 			break
@@ -59,7 +87,7 @@ func main() {
 	}
 
 	// Create file to write to
-	outFile := strings.TrimSuffix(os.Args[1], ".ndj") + ".csv"
+	outFile := strings.TrimSuffix(flag.Arg(0), ".ndj") + ".csv"
 	f, err := os.Create(outFile)
 	if err != nil {
 		fmt.Println(err)
